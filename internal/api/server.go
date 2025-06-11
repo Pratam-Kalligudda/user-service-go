@@ -4,9 +4,10 @@ import (
 	"log"
 
 	"github.com/Pratam-Kalligudda/user-service-go/config"
-	api "github.com/Pratam-Kalligudda/user-service-go/internal/api/rest"
+	"github.com/Pratam-Kalligudda/user-service-go/internal/api/rest"
 	"github.com/Pratam-Kalligudda/user-service-go/internal/api/rest/handler"
 	"github.com/Pratam-Kalligudda/user-service-go/internal/domain"
+	"github.com/Pratam-Kalligudda/user-service-go/internal/helper"
 	"github.com/gofiber/fiber/v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -17,7 +18,7 @@ func SetupServer(config config.Config) {
 
 	db, err := gorm.Open(postgres.Open(config.DSN), &gorm.Config{})
 	if err != nil {
-		log.Fatalln("couldnt connect to database")
+		log.Fatalln("couldnt connect to database " + config.DSN + "\nerr : " + err.Error())
 		return
 	}
 	log.Println("connection to database is succesfully")
@@ -29,15 +30,18 @@ func SetupServer(config config.Config) {
 
 	log.Println("automigration succeded")
 
-	setupRoutes(&api.RestHandler{
-		App: app,
-		DB:  db,
+	auth := helper.NewAuthHelper(config.Secret)
+
+	setupRoutes(&rest.RestHandler{
+		App:  app,
+		DB:   db,
+		Auth: auth,
 	})
 
-	app.Listen(config.Secret)
+	app.Listen(config.Host)
 
 }
 
-func setupRoutes(rh *api.RestHandler) {
+func setupRoutes(rh *rest.RestHandler) {
 	handler.SetupUserHandler(rh)
 }

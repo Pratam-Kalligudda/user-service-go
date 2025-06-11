@@ -32,6 +32,7 @@ func (a Auth) GetCurrentUser(ctx *fiber.Ctx) error {
 func (a Auth) GenerateToken(id uint, role, email string) (string, error) {
 	return "", nil
 }
+
 func (a Auth) VerifyToken(token string) (domain.User, error) {
 	return domain.User{}, nil
 }
