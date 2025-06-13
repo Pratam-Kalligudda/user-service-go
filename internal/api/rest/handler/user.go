@@ -149,8 +149,18 @@ func (h *UserHandler) GetProfile(ctx fiber.Ctx) error {
 }
 
 func (h *UserHandler) GetVerificationCode(ctx fiber.Ctx) error {
+	userId := ctx.Locals("id").(uint)
+	code, err := h.svc.GetVerificationCode(userId)
+
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "succesfully sent verification code",
+		"code":    code,
 	})
 }
 
@@ -161,6 +171,18 @@ func (h *UserHandler) BecomeSeller(ctx fiber.Ctx) error {
 }
 
 func (h *UserHandler) VerifyUser(ctx fiber.Ctx) error {
+	userId := ctx.Locals("id").(uint)
+	var verificationDto dto.VerificationCodeDTO
+	if err := ctx.Bind().Body(&verificationDto); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	if err := h.svc.VerifyUser(verificationDto, userId); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "succesfully verified user",
 	})
