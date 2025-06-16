@@ -42,6 +42,10 @@ func (s UserService) Login(u dto.LoginDTO) (string, string, error) {
 
 func (s UserService) Register(u dto.SignupDTO) (string, string, error) {
 
+	if err := s.Auth.Validate(u); err != nil {
+		return "", "", err
+	}
+
 	hashPass, err := s.Auth.GenerateHashPassword(u.Password)
 	if err != nil {
 		return "", "", err

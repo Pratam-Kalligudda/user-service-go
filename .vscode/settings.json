@@ -1,0 +1,6 @@
+{
+  "sonarlint.connectedMode.project": {
+    "connectionId": "pratam-kalligudda",
+    "projectKey": "Pratam-Kalligudda_user-service-go"
+  }
+}

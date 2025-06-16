@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/Pratam-Kalligudda/user-service-go/internal/domain"
+	"github.com/Pratam-Kalligudda/user-service-go/internal/dto"
 	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -86,6 +88,11 @@ func (a Auth) GetCurrentUser(ctx fiber.Ctx) (domain.User, error) {
 }
 
 func (a Auth) GenerateToken(id uint, role, email string, exp time.Duration) (string, error) {
+	if id <= 0 || (role != "buyer" && role != "seller") || len(email) == 0 || exp < 15*time.Minute {
+		return "", errors.New("one of the parameters is not as expected : ")
+
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"exp":   time.Now().Add(exp).Unix(),
 		"iss":   "user-service",
@@ -96,6 +103,30 @@ func (a Auth) GenerateToken(id uint, role, email string, exp time.Duration) (str
 
 	signedToken, _ := token.SignedString([]byte(a.secret))
 	return signedToken, nil
+}
+
+func (a Auth) Validate(usr dto.SignupDTO) error {
+	phoneRegex := "^[0-9]{10}$"
+	emailRegex := `^[\w\.-]+@[\w\.-]+\.[a-zA-Z]{2,6}$`
+
+	// Validate email
+	ok, err := regexp.MatchString(emailRegex, usr.Email)
+	if len(usr.Email) == 0 || !ok || err != nil {
+		return errors.New("incorrect email format")
+	}
+
+	// Validate password length
+	if len(usr.Password) < 6 {
+		return errors.New("password should be at least 6 characters long")
+	}
+
+	// Validate phone
+	ok, err = regexp.MatchString(phoneRegex, usr.Phone)
+	if len(usr.Phone) != 10 || !ok || err != nil {
+		return errors.New("incorrect phone format")
+	}
+
+	return nil
 }
 
 func (a Auth) VerifyToken(tokenStr string) (domain.User, error) {
