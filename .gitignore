@@ -1,1 +1,4 @@
 sonar-project.properties
+coverage.out
+.scannerwork
+

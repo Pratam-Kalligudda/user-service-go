@@ -35,7 +35,7 @@ func SetupUserHandler(rh *rest.RestHandler) {
 	pvtRoutes.Get("/refresh", handler.Refresh)
 	pvtRoutes.Get("/verification", handler.GetVerificationCode)
 	pvtRoutes.Post("/verification", handler.VerifyUser)
-	pvtRoutes.Post("become-seller", handler.BecomeSeller)
+	pvtRoutes.Post("/become-seller", handler.BecomeSeller)
 }
 
 func (h *UserHandler) Login(ctx fiber.Ctx) error {
